@@ -9,10 +9,11 @@ class Form{
         $this->data = $data;
     }
 
+    //Méthode de sélection des chiffres
     public function select(){
         for($i = 0; $i < 4; $i++){
             echo "<td>";
-            echo "<select name= place" . $i+1 . ">";
+            echo "<select name= emplacement" . $i+1 . ">";
             for($j = 1; $j <= 6; $j++){
                 echo "<option value=".$j.">".$j."</option>";
             }
@@ -26,7 +27,7 @@ class Form{
     }
 
     public function getValue($index){
-        return isset($this->data[$index]) ? $this->data[$index] : "Aucune valeur pour ce champ";
+        return isset($this->data[$index]) ? $this->data[$index] : null;
     }
     
 }
