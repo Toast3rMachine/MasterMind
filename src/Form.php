@@ -22,6 +22,13 @@ class Form{
         }
     }
 
+    //Méthode de relance du jeux
+    public function reset(){
+        echo "<td><input type='submit' value='Rejouer' name='Rejouer'></td>";
+    }
+
+
+    //Méthode de validation
     public function submit(){
         echo "<td><input type='submit' value='Valider'></td>";
     }

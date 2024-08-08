@@ -10,16 +10,24 @@
         require 'src/MasterMind.php';
         require 'src/Form.php';
 
+        session_id('masterMind');
         session_start();
 
+        // Réinitialise la session
+        if (isset($_POST['Rejouer'])){
+            session_destroy();
+            session_start();
+        }
+
+        // Initialisation de la session
         if (!isset($_SESSION['masterMind'])){
             $masterMind = new MasterMind();
             $_SESSION['masterMind'] = $masterMind;
             $_SESSION['secretCode'] = $masterMind->generateSecretCode();
         }
-
+        
+        
         $secretCode = $_SESSION['secretCode'];
-
         $form = new Form($_POST);
 
         ?>
@@ -36,7 +44,7 @@
                 </p>
                 <p>Lorsque le code est 4 pions blanc le joueur a gagné et peut relancer une partie. </p>
             </div>
-            <form method="post" action="">
+            <form method="post" action="index.php">
                 <table class='table'>
                     <tr>
                         <th colspan="4" class='tab'>Proposition</th>
@@ -123,15 +131,16 @@
                     ?>
                 </div>
                 <?php 
-                    if ($masterMind->getTry() - 1 == $masterMind->getMaxTries()){ // $masterMind->getTry() - 1 car on incrémente le nombre d'essaies avant de vérifier si on a atteint le nombre maximum d'essaies
-                        echo "<p class='information'>Partie terminée, vous avez perdu.</p>";
-                        // Ajouter bouton pour relancer une partie
-                    } else if ($masterMind->getWin()){
+                    if ($masterMind->getWin()){
                         echo "<p class='information'>Partie terminée, vous avez gagné.</p>";
-                        // Ajouter bouton pour relancer une partie
+                        $form->reset();
+                    } else if ($masterMind->getTry() - 1 == $masterMind->getMaxTries()){ // $masterMind->getTry() - 1 car on incrémente le nombre d'essaies avant de vérifier si on a atteint le nombre maximum d'essaies
+                        echo "<p class='information'>Partie terminée, vous avez perdu.</p>";
+                        $form->reset();
                     } else {
                         echo "<p class='information'>Il vous reste " . ($masterMind->getMaxTries() - $masterMind->getTry() + 1) . " essaie(s).</p> <br>";
                         $form->submit();
+                        redirect('index.php');
                     }
                     ?>
             </form>
