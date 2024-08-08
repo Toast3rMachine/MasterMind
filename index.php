@@ -11,7 +11,7 @@
         require 'src/Form.php';
 
         session_id('masterMind');
-        session_start();
+        if (!isset($_SESSION)) session_start();
 
         // Réinitialise la session
         if (isset($_POST['Rejouer'])){
@@ -26,9 +26,29 @@
             $_SESSION['secretCode'] = $masterMind->generateSecretCode();
         }
         
-        
         $secretCode = $_SESSION['secretCode'];
         $form = new Form($_POST);
+
+        if (isset($_POST['Submit'])) {
+            $history = new DOMDocument();
+
+            $emplacementTab = array();
+            for ($i = 0; $i < 4; $i++){
+                $emplacementTab[$i] = $_POST['emplacement' . $i+1];
+            }
+            if (count(array_unique($emplacementTab)) == count($emplacementTab)){
+
+                $masterMind = $_SESSION['masterMind'];
+                $masterMind->incrementTry();
+                $_SESSION['masterMind'] = $masterMind;
+                
+                $form->updateHistory($history, $form, $emplacementTab);
+                header( "Location: {$_SERVER['REQUEST_URI']}", true, 303 );
+                exit();
+            } else {
+                $_SESSION['erreur'] = true;
+            }
+        }
 
         ?>
     </head>
@@ -53,102 +73,55 @@
                     <?php
 
                     $history = new DOMDocument();
+
                     if (!isset($_SESSION['history'])){
-                        for ($i = 0; $i < $_SESSION['masterMind']->getMaxTries(); $i++){
-                            $tr = $history->createElement("tr");
-                            
-                            $tr->setAttribute("id", $i+1);
-                            for ($j = 0; $j < 5; $j++){
-                                $td = $history->createElement("td");
-                                $tr->appendChild($td);
-                            }
-                            for ($j = 0; $j < 2; $j++){
-                                $span = $history->createElement("span");
-                                $tr->getElementsByTagName("td")[4]->appendChild($span);
-                                if ($j == 0){
-                                    $span->setAttribute("class", "pion blanc");
-                                } else {
-                                    $span->setAttribute("class", "pion rouge");
-                                }
-                            }
-                            $history->appendChild($tr);
-                        }
-                        $_SESSION['history'] = $history->saveHTML();
+                        $form->generateHistory($_SESSION['masterMind']->getMaxTries());
+                        echo $form->displayHistory();
                     } else {
-                        $masterMind = $_SESSION['masterMind'];
-                        $code = "";
-                        $history->loadHTML($_SESSION['history']);
-
-                        for ($i = 0; $i < 4; $i++){ // Parcours de la liste <td></td>
-                            $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->setAttribute("class", "number");
-                            $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->appendChild($history->createTextNode($form->getValue("emplacement" . $i+1)));
-                            $code = $code . $form->getValue("emplacement" . $i+1);
-                        }
-
-                        for ($i = 0; $i < 2; $i++){
-                            for ($j = 0; $j < $masterMind->checkCode($code)[$i]; $j++){
-                                    $history->getElementById($masterMind->getTry())->getElementsByTagName("span")[$i]->appendChild($history->createTextNode("•"));
-                                }
-                        }
-
+                        echo $form->displayHistory();
                     }
-                    echo $history->saveHTML();
-
+                    
                     ?>
                     <tr>
-                        <th colspan="5" class='tab'>A vous de jouer !</th>
+                        <th colspan="5" class='tab'>
+                            <?php
+                            $masterMind = $_SESSION['masterMind'];
+                            if ($masterMind->getWin()){
+                                echo "Partie terminée, vous avez gagné.";
+                            } else if ($masterMind->getLose()){
+                                echo "Partie terminée, vous avez perdu. <br>";
+                                echo "<p class='information'>Le code à deviner était : " . $masterMind->getSecretCode() . "</p>";
+                            } else {
+                                echo "A vous de jouer !";
+                            }
+                            ?>
+                            
+                        </th>
                     </tr>
                 </table>
-                <div class="select option">
-                    <?php 
-                    $masterMind = $_SESSION['masterMind'];
-                    $history = new DOMDocument();
-                    $history->loadHTML($_SESSION['history']);
-                    $code = "";
-                    echo $form->select();
-                    
-                    if ($masterMind->getTry() != 0 & $masterMind->getTry() < $masterMind->getMaxTries()){
-                        for ($i = 0; $i < 4; $i++){
-                            $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->setAttribute("class", "number");
-                            $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->appendChild($history->createTextNode($form->getValue("emplacement" . $i+1)));
-                            $code = $code . $form->getValue("emplacement" . $i+1);
-                        }
-
-                        for ($i = 0; $i < 2; $i++){
-                            for ($j = 0; $j < $masterMind->checkCode($code)[$i]; $j++){
-                                    $history->getElementById($masterMind->getTry())->getElementsByTagName("span")[$i]->appendChild($history->createTextNode("•"));
-                                }
-                        }
-
-                        $_SESSION['history'] = $history->saveHTML();
-                        $_SESSION['code'] = $code;
+                <p class="error">
+                    <?php
+                    if (isset($_SESSION['erreur'])){
+                        echo "Veuillez choisir un chiffre différent pour chaque emplacement.";
+                        unset($_SESSION['erreur']);
                     }
-
-                    $masterMind->incrementTry();
-
-                    $_SESSION['masterMind'] = $masterMind;
-                    
+                    ?>
+                </p>
+                <div class="select option">
+                    <?php
+                    echo $form->select();                    
                     ?>
                 </div>
                 <?php 
-                    if ($masterMind->getWin()){
-                        echo "<p class='information'>Partie terminée, vous avez gagné.</p>";
-                        $form->reset();
-                    } else if ($masterMind->getTry() - 1 == $masterMind->getMaxTries()){ // $masterMind->getTry() - 1 car on incrémente le nombre d'essaies avant de vérifier si on a atteint le nombre maximum d'essaies
-                        echo "<p class='information'>Partie terminée, vous avez perdu.</p>";
-                        $form->reset();
+                    if ($masterMind->getWin() || $masterMind->getLose()){
+                        echo "<p class='information'>Voulez-vous relancer une partie ?</p> <br>";
+                        echo $form->replay();
                     } else {
-                        echo "<p class='information'>Il vous reste " . ($masterMind->getMaxTries() - $masterMind->getTry() + 1) . " essaie(s).</p> <br>";
-                        $form->submit();
-                        redirect('index.php');
+                        echo "<p class='information'>Il vous reste " . ($masterMind->getMaxTries() - $masterMind->getTry()) . " essaie(s).</p> <br>";
+                        echo $form->submit();
                     }
                     ?>
             </form>
         </main>
     </body>
 </html>
-
-
-
-
-

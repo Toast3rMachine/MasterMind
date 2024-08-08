@@ -8,6 +8,7 @@ class MasterMind{
     private $maxTries = 10;
     private $secretCode = array(); //Tableau contenant le code à deviner
     private $win = false;
+    private $lose = false;
 
     //Fonction générant le code à deviner
     public function generateSecretCode(){
@@ -47,6 +48,9 @@ class MasterMind{
     //Fonction incrémentant le nombre d'essaies
     public function incrementTry(){
         $this->try++;
+        if ($this->try >= $this->maxTries){
+            $this->lose = true;
+        }
     }
 
     //Fonction retournant le nombre d'essaies
@@ -59,9 +63,23 @@ class MasterMind{
         return $this->maxTries;
     }
 
+    //Fonction retournant le code à deviner
+    public function getSecretCode(){
+        $code = "";
+        foreach($this->secretCode as $i){
+            $code = $code . $i;
+        }
+        return $code;
+    }
+
     //Fonction retournant si le joueur a gagné
     public function getWin(){
         return $this->win;
+    }
+
+    //Fonction retournant si le joueur a perdu
+    public function getLose(){
+        return $this->lose;
     }
 
 }
