@@ -1,13 +1,14 @@
 body {
     background-color: rgb(17, 24, 39);
     font-family: sans-serif;
+    overflow: hidden;
 }
 
 main {
-margin: 80px auto;
-width: 80%;
-max-width: 600px;
-text-align: center;
+    margin: 80px auto;
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
 }
 
 h1.title {
@@ -48,13 +49,23 @@ span.pion {
     text-shadow: 0 0 2px black;
 }
 
-.pion.blanc, .tab {
+.tab {
+    color: white;
+}
+
+table tr {
+    height: 30px; 
+    /* La hauteur des lignes est de 30 pixel ( donnée obtenu grâce au DevTools )
+    Cela permet de "rendre visible" les lignes vides
+    et de ne pas comprimer le jeu */
+}
+
+.pion.blanc {
     color: white;
 }
 
 .pion.rouge {
     color: red;
-    margin-right: 1rem;
 }
 
 p.error {
