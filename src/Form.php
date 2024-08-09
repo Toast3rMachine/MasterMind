@@ -42,21 +42,21 @@ class Form{
     //Méthode de mise à jour de l'historique
     public function updateHistory($history, $form, $emplacementTab){
         $masterMind = $_SESSION['masterMind'];
-        $code = "";
+        $proposition = "";
         $history->loadHTML($_SESSION['history']);
 
         for ($i = 0; $i < 4; $i++){ // Parcours de la liste <td></td>
             $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->setAttribute("class", "number");
             $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->appendChild($history->createTextNode($emplacementTab[$i]));
-            $code = $code . $form->getValue("emplacement" . $i+1);
+            $proposition = $proposition . $form->getValue("emplacement" . $i+1);
         }
 
         for ($i = 0; $i < 2; $i++){
-            for ($j = 0; $j < $masterMind->checkCode($code)[$i]; $j++){
+            for ($j = 0; $j < $masterMind->checkCode($proposition)[$i]; $j++){
                     $history->getElementById($masterMind->getTry())->getElementsByTagName("span")[$i]->appendChild($history->createTextNode("•"));
                 }
         }
-        $_SESSION['code'] = $code;
+        $_SESSION['proposition'] = $proposition;
         $_SESSION['history'] = $history->saveHTML();
     }
 
