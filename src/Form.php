@@ -1,34 +1,55 @@
 <?php
 
-//Création de la class Form
+/**
+ * Class Form
+ * Permet de créer un formulaire.
+ */
 class Form{
 
-    private $data;
+    /**
+     * @var array Données utilisées par le formulaire
+     */
+    private array $data;
 
-    public function __construct($data = array()){
+    /**
+     * @param array $data
+     * 
+     * Constructeur de la classe
+     */
+    public function __construct(array $data = array()){
         $this->data = $data;
     }
 
-    //Méthode d'affichage de l'historique
-    public function displayHistory(){
-        echo $_SESSION['history'];
+    /**
+     * @return string
+     * 
+     * Retourne l'historique afin de l'afficher
+     */
+    public function displayHistory(): string{
+        return $_SESSION['history'];
     }
 
-    //Méthode de génération de l'historique
-    public function generateHistory($numberOfCells){
-        $history = new DOMDocument();
-        for ($i = 0; $i < $numberOfCells; $i++){
+    /**
+     * @param int $numberOfCells
+     * 
+     * @return void
+     * 
+     * Génère l'historique du jeu quand celui-ci n'est pas encore initialisé
+     */
+    public function generateHistory(int $numberOfCells): void{
+        $history = new DOMDocument(); 
+        for ($i = 0; $i < $numberOfCells; $i++){ // Parcours de la liste <tr></tr>, $numberOfCells correspond au nombre de tentatives maximum
             $tr = $history->createElement("tr");
             
-            $tr->setAttribute("id", $i+1);
-            for ($j = 0; $j < 5; $j++){
+            $tr->setAttribute("id", $i+1); // Ajout d'un id pour chaque ligne
+            for ($j = 0; $j < 5; $j++){ // Parcours de la liste <td></td>, 5 car on a 4 colonnes pour les chiffres et 1 pour les pions
                 $td = $history->createElement("td");
                 $tr->appendChild($td);
             }
-            for ($j = 0; $j < 2; $j++){
+            for ($j = 0; $j < 2; $j++){ // Parcours de la liste <span></span>, 2 car on a 2 types de pions à afficher
                 $span = $history->createElement("span");
-                $tr->getElementsByTagName("td")[4]->appendChild($span);
-                if ($j == 0){
+                $tr->getElementsByTagName("td")[4]->appendChild($span); // Ajout de la balise <span> dans la dernière colonne 
+                if ($j == 0){ // $j == 0 car on veut que le premier <spans> soit pour les pions blancs
                     $span->setAttribute("class", "pion blanc");
                 } else {
                     $span->setAttribute("class", "pion rouge");
@@ -39,52 +60,85 @@ class Form{
         $_SESSION['history'] = $history->saveHTML();
     }
 
-    //Méthode de mise à jour de l'historique
-    public function updateHistory($history, $form, $emplacementTab){
+    /**
+     * @param DOMDocument $history
+     * @param Form $form
+     * @param array $emplacementTab
+     * 
+     * @return void
+     * 
+     * Met à jour l'historique du jeu
+     */
+    public function updateHistory(DOMDocument $history, Form $form, array $emplacementTab): void{
         $masterMind = $_SESSION['masterMind'];
-        $proposition = "";
+        $proposition = ""; //Variable contenant la proposition du joueur
         $history->loadHTML($_SESSION['history']);
 
-        for ($i = 0; $i < 4; $i++){ // Parcours de la liste <td></td>
-            $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->setAttribute("class", "number");
-            $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->appendChild($history->createTextNode($emplacementTab[$i]));
-            $proposition = $proposition . $form->getValue("emplacement" . $i+1);
+        for ($i = 0; $i < 4; $i++){ // Parcours de la liste <td></td>, $i < 4 car on a 4 chiffres à afficher
+            $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->setAttribute("class", "number"); // Ajout de la classe number pour le css
+            $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->appendChild($history->createTextNode($emplacementTab[$i])); // Ajout du chiffre dans le tableau
+            $proposition = $proposition . $form->getValue("emplacement" . $i+1); // Ajout du chiffre dans la proposition
         }
 
-        for ($i = 0; $i < 2; $i++){
+        for ($i = 0; $i < 2; $i++){ // Parcours de la liste <span></span>, $i < 2 car on a 2 types de pions à afficher
             for ($j = 0; $j < $masterMind->checkCode($proposition)[$i]; $j++){
-                    $history->getElementById($masterMind->getTry())->getElementsByTagName("span")[$i]->appendChild($history->createTextNode("•"));
+                    $history->getElementById($masterMind->getTry())->getElementsByTagName("span")[$i]->appendChild($history->createTextNode("•")); // Ajout du pion dans le tableau
                 }
         }
-        $_SESSION['proposition'] = $proposition;
-        $_SESSION['history'] = $history->saveHTML();
+        $_SESSION['proposition'] = $proposition; // Enregistrement de la proposition dans la session
+        $_SESSION['history'] = $history->saveHTML(); // Enregistrement de l'historique dans la session
     }
 
-    //Méthode de sélection des chiffres
-    public function select(){
-        for($i = 0; $i < 4; $i++){
-            echo "<td>";
-            echo "<select name= emplacement" . $i+1 . ">";
-            for($j = 1; $j <= 6; $j++){
-                echo "<option value=".$j.">".$j."</option>";
+    /**
+     * @return string
+     * 
+     * Retourne le formulaire de sélection des chiffres
+     */
+    public function select(): string{
+        $selectMenu = new DOMDocument();
+        $td = $selectMenu->createElement("td");
+        for($i = 0; $i < 4; $i++){ // Parcours de la liste <select></select>, $i < 4 car on a 4 chiffres à deviner
+            $select = $selectMenu->createElement("select");
+            for($j = 1; $j <= 6; $j++){ // Parcours de la liste <option></option>, $j <= 6 car on a 6 chiffres à afficher
+                $option = $selectMenu->createElement("option");
+                $option->setAttribute("value", $j); // Ajout de la valeur dans la balise <option>
+                $option->appendChild($selectMenu->createTextNode($j));
+                $select->appendChild($option);
             }
-            echo "</select>";
-            echo "</td>";
+            $select->setAttribute("name", "emplacement" . ($i+1)); // Ajout de l'attribut name dans la balise <select> pour récupérer la valeur plus facilement
+            $td->appendChild($select);
         }
+        $selectMenu->appendChild($td);
+        return $selectMenu->saveHTML();
     }
 
-    //Méthode de relance du jeux
-    public function replay(){
+    /**
+     * @return string
+     * 
+     * Retourne le bouton de relance du jeu
+     */
+    public function replay(): string{
         return "<td><input type='submit' value='Rejouer' name='Rejouer'></td>";
     }
 
-    //Méthode de validation
-    public function submit(){
+    /**
+     * @return string
+     * 
+     * Retourne le bouton de validation
+     */
+    public function submit(): string{
         return "<td><input type='submit' value='Valider' name='Submit'></td>";
     }
 
-    public function getValue($index){
-        return isset($this->data[$index]) ? $this->data[$index] : null;
+    /**
+     * @param string $index
+     * 
+     * @return string|null
+     * 
+     * Retourne la valeur du formulaire
+     */
+    public function getValue(string $index): ?string{
+        return isset($this->data[$index]) ? $this->data[$index] : null; // Vérifie si la valeur existe dans le tableau, si oui retourne la valeur, sinon retourne null
     }
 
 }

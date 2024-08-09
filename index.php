@@ -20,33 +20,34 @@
         }
 
         // Initialisation de la session
-        if (!isset($_SESSION['masterMind'])){
+        if (!isset($_SESSION['masterMind'])){ // Si la session n'existe pas, on la crée
             $masterMind = new MasterMind();
             $_SESSION['masterMind'] = $masterMind;
             $_SESSION['secretCode'] = $masterMind->generateSecretCode();
         }
         
-        $secretCode = $_SESSION['secretCode'];
-        $form = new Form($_POST);
+        $secretCode = $_SESSION['secretCode']; // Récupération du code secret
+        $form = new Form($_POST); // Création du formulaire
 
-        if (isset($_POST['Submit'])) {
+        // Condition du Post-Redirect-Get pour éviter le renvoi du formulaire
+        if (isset($_POST['Submit'])) { // Si le bouton valider est cliqué
             $history = new DOMDocument();
 
-            $emplacementTab = array();
-            for ($i = 0; $i < 4; $i++){
-                $emplacementTab[$i] = $_POST['emplacement' . $i+1];
+            $emplacementTab = array(); 
+            for ($i = 0; $i < 4; $i++){ // Parcours de la liste <select></select>, $i < 4 car on a 4 chiffres à deviner
+                $emplacementTab[$i] = $_POST['emplacement' . $i+1]; // Récupération des valeurs des emplacements
             }
-            if (count(array_unique($emplacementTab)) == count($emplacementTab)){
+            if (count(array_unique($emplacementTab)) == count($emplacementTab)){ // Vérifie si les chiffres sont différents
 
                 $masterMind = $_SESSION['masterMind'];
                 $masterMind->incrementTry();
                 $_SESSION['masterMind'] = $masterMind;
                 
-                $form->updateHistory($history, $form, $emplacementTab);
-                header( "Location: {$_SERVER['REQUEST_URI']}", true, 303 );
-                exit();
+                $form->updateHistory($history, $form, $emplacementTab); // Mise à jour de l'historique
+                header( "Location: {$_SERVER['REQUEST_URI']}", true, 303 ); // Redirection pour éviter le renvoi du formulaire
+                exit(); // Arrêt du script
             } else {
-                $_SESSION['erreur'] = true;
+                $_SESSION['erreur'] = true; // Si les chiffres ne sont pas différents, on enregistre une erreur
             }
         }
 
@@ -75,8 +76,8 @@
                     $history = new DOMDocument();
 
                     if (!isset($_SESSION['history'])){
-                        $form->generateHistory($_SESSION['masterMind']->getMaxTries());
-                        echo $form->displayHistory();
+                        $form->generateHistory($_SESSION['masterMind']->getMaxTries()); // Génère l'historique
+                        echo $form->displayHistory(); // Affiche l'historique
                     } else {
                         echo $form->displayHistory();
                     }
@@ -86,9 +87,9 @@
                         <th colspan="5" class='tab'>
                             <?php
                             $masterMind = $_SESSION['masterMind'];
-                            if ($masterMind->getWin()){
+                            if ($masterMind->getWin()){ // Affiche un message si le joueur a gagné
                                 echo "Partie terminée, vous avez gagné.";
-                            } else if ($masterMind->getLose()){
+                            } else if ($masterMind->getLose()){ // Affiche un message si le joueur a perdu et le code secret
                                 echo "Partie terminée, vous avez perdu. <br>";
                                 echo "<p class='information'>Le code à deviner était : " . $masterMind->getSecretCode() . "</p>";
                             } else {
@@ -99,24 +100,22 @@
                         </th>
                     </tr>
                 </table>
-                <p class="error">
-                    <?php
-                    if (isset($_SESSION['erreur'])){
-                        echo "Veuillez choisir un chiffre différent pour chaque emplacement.";
-                        unset($_SESSION['erreur']);
-                    }
-                    ?>
-                </p>
+                <?php
+                if (isset($_SESSION['erreur'])){ // Affiche une erreur si les chiffres ne sont pas différents
+                    echo "<p class='error'>Veuillez choisir un chiffre différent pour chaque emplacement.</p>";
+                    unset($_SESSION['erreur']); // Supprime l'erreur pour ne pas la réafficher
+                }
+                ?>
                 <div class="select option">
                     <?php
-                    echo $form->select();                    
+                    echo $form->select(); // Affiche le formulaire de sélection des chiffres
                     ?>
                 </div>
                 <?php 
-                    if ($masterMind->getWin() || $masterMind->getLose()){
+                    if ($masterMind->getWin() || $masterMind->getLose()){ // Affiche le bouton rejouer si la partie est terminée
                         echo "<p class='information'>Voulez-vous relancer une partie ?</p> <br>";
                         echo $form->replay();
-                    } else {
+                    } else { // Affiche le nombre d'essais restants et le bouton valider
                         echo "<p class='information'>Il vous reste " . ($masterMind->getMaxTries() - $masterMind->getTry()) . " essaie(s).</p> <br>";
                         echo $form->submit();
                     }

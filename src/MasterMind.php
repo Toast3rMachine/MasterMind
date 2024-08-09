@@ -1,17 +1,49 @@
 <?php
 
-//Création de la class MasterMind
+/**
+ * Class MasterMind
+ * Permet de créer un masterMind.
+ */
 class MasterMind{
     
-    private $size = 4;
-    private $try = 0;
-    private $maxTries = 10;
-    private $secretCode = array(); //Tableau contenant le code à deviner
-    private $win = false;
-    private $lose = false;
+    /**
+     * @var int
+     */
+    private int $size = 4;
 
-    //Fonction générant le code à deviner
-    public function generateSecretCode(){
+    /**
+     * @var int
+     */
+    private int $try = 0;
+
+    /**
+     * @var int
+     */
+    private int $maxTries = 10;
+
+    /**
+     * @var array
+     */
+    private array $secretCode = array(); //Tableau contenant le code à deviner
+
+    /**
+     * @var bool
+     */
+    private bool $win = false;
+
+    /**
+     * @var bool
+     */
+    private bool $lose = false;
+
+    
+    
+    /**
+     * @return array
+     * 
+     * Génère un code aléatoire de $this->size chiffres entre 1 et 6
+     */
+    public function generateSecretCode(): array{
         $randomNumber = 0;
         for($i = 0; $i < $this->size; $i++){ //Boucle pour générer les 4 chiffres du code à partir de la taille attribué à la classe
             $randomNumber = random_int(1, 6); //Génère un nombre aléatoire entre 1 et 6
@@ -25,8 +57,15 @@ class MasterMind{
         return $this->secretCode;
     }
 
-    //Fonction vérifiant si le code entré par l'utilisateur est correct
-    public function checkCode($code){
+    
+    /**
+     * @param string $code
+     * 
+     * @return array
+     * 
+     * Vérifie si le code entré est correct et retourne le nombre de chiffres bien placés et mal placés
+     */
+    public function checkCode(string $code): array{
         $code = str_split($code); //Transforme le code entré en tableau
         $correct = 0;
         $misplaced = 0;
@@ -45,26 +84,42 @@ class MasterMind{
         return array($correct, $misplaced);
     }
 
-    //Fonction incrémentant le nombre d'essaies
-    public function incrementTry(){
+    /**
+     * @return void
+     * 
+     * Incrémente le nombre d'essaies et vérifie si le joueur a utilisé tous ses essaies
+     */
+    public function incrementTry(): void{
         $this->try++;
-        if ($this->try >= $this->maxTries){
+        if ($this->try >= $this->maxTries){ //Si le nombre d'essaies est supérieur ou égal au nombre d'essaies maximum alors le joueur a 
             $this->lose = true;
         }
     }
 
-    //Fonction retournant le nombre d'essaies
-    public function getTry(){
+    /**
+     * @return int
+     * 
+     * Retourne le nombre d'essaies
+     */
+    public function getTry(): int{
         return $this->try;
     }
-
-    //Fonction retournant le nombre d'essaies maximum
-    public function getMaxTries(){
+    
+    /**
+     * @return int
+     * 
+     * Retourne le nombre d'essaies maximum
+     */
+    public function getMaxTries(): int{
         return $this->maxTries;
     }
 
-    //Fonction retournant le code à deviner
-    public function getSecretCode(){
+    /**
+     * @return string
+     * 
+     * Retourne le code secret
+     */
+    public function getSecretCode(): string{
         $code = "";
         foreach($this->secretCode as $i){
             $code = $code . $i;
@@ -72,13 +127,21 @@ class MasterMind{
         return $code;
     }
 
-    //Fonction retournant si le joueur a gagné
-    public function getWin(){
+    /**
+     * @return bool
+     * 
+     * Retourne si le joueur a gagné
+     */
+    public function getWin(): bool{
         return $this->win;
     }
 
-    //Fonction retournant si le joueur a perdu
-    public function getLose(){
+    /**
+     * @return bool
+     * 
+     * Retourne si le joueur a perdu
+     */
+    public function getLose(): bool{
         return $this->lose;
     }
 
