@@ -1,0 +1,54 @@
+div.rules, p.information {
+    color: rgb(156 163 175);
+    font-weight: normal;
+}
+
+table {
+    width: 400px;    
+    margin: 20px auto;
+}
+
+th#proposition, th#resultat {
+    width: 200px;
+}
+
+.number {
+    color: rgb(156 163 175);
+    background-color: rgb(31 41 55);
+    border: solid;
+    border-width: 2px;
+    border-radius: 0.5rem;
+    border-color: rgb(209 213 219);
+    width: 30px;
+}
+
+span.pion {
+    font-size: 2.5rem;
+    line-height: 20px;
+    text-shadow: 0 0 2px black;
+}
+
+.tab {
+    color: white;
+    width: auto;
+}
+
+table tr {
+    height: 30px; 
+    /* La hauteur des lignes est de 30 pixel ( donnée obtenu grâce au DevTools )
+    Cela permet de "rendre visible" les lignes vides
+    et de ne pas comprimer le jeu */
+}
+
+.pion.blanc {
+    color: white;
+}
+
+.pion.rouge {
+    color: red;
+}
+
+p.error {
+    color: red;
+    font-weight: 700;
+}

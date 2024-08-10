@@ -4,7 +4,8 @@
         <title>MasterMind</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="style/style.css" rel="stylesheet" />
+        <link href="style/global.css" rel="stylesheet" />
+        <link href="style/index.css" rel="stylesheet" />
         <?php
 
         require 'src/MasterMind.php';
@@ -15,15 +16,22 @@
 
         // Réinitialise la session
         if (isset($_POST['Rejouer'])){
+            $options = $_SESSION['options']; // Sauvegarde des options afin que l'utilisateur puisse relancer une partie avec les mêmes paramètres
             session_destroy();
             session_start();
+            $_SESSION['options'] = $options;
         }
 
         // Initialisation de la session
-        if (!isset($_SESSION['masterMind'])){ // Si la session n'existe pas, on la crée
+        if (!isset($_SESSION['masterMind']) || isset($_SESSION['modification'])){ // Si la session n'existe pas ou si elle a été modifiée
+            // On regénère un code secret quand on change les paramètres pour éviter la triche sur une même partie
             $masterMind = new MasterMind();
             $_SESSION['masterMind'] = $masterMind;
             $_SESSION['secretCode'] = $masterMind->generateSecretCode();
+            if (isset($_SESSION['modification'])) {
+                unset($_SESSION['modification']); // Supprime la modification pour ne pas la réafficher
+                unset($_SESSION['history']); // Supprime l'historique pour le regénérer avec les bons paramètres
+            }
         }
         
         $secretCode = $_SESSION['secretCode']; // Récupération du code secret
@@ -32,12 +40,13 @@
         // Condition du Post-Redirect-Get pour éviter le renvoi du formulaire
         if (isset($_POST['Submit'])) { // Si le bouton valider est cliqué
             $history = new DOMDocument();
+            $masterMind = $_SESSION['masterMind'];
 
             $emplacementTab = array(); 
-            for ($i = 0; $i < 4; $i++){ // Parcours de la liste <select></select>, $i < 4 car on a 4 chiffres à deviner
+            for ($i = 0; $i < $masterMind->getSize(); $i++){ // Parcours de la liste <select></select>, on a $masterMind->getSize() chiffres à deviner
                 $emplacementTab[$i] = $_POST['emplacement' . $i+1]; // Récupération des valeurs des emplacements
             }
-            if (count(array_unique($emplacementTab)) == count($emplacementTab)){ // Vérifie si les chiffres sont différents
+            // if (count(array_unique($emplacementTab)) == count($emplacementTab)){ // Vérifie si les chiffres sont différents
 
                 $masterMind = $_SESSION['masterMind'];
                 $masterMind->incrementTry();
@@ -46,9 +55,9 @@
                 $form->updateHistory($history, $form, $emplacementTab); // Mise à jour de l'historique
                 header( "Location: {$_SERVER['REQUEST_URI']}", true, 303 ); // Redirection pour éviter le renvoi du formulaire
                 exit(); // Arrêt du script
-            } else {
-                $_SESSION['erreur'] = true; // Si les chiffres ne sont pas différents, on enregistre une erreur
-            }
+            // } else {
+            //     $_SESSION['erreur'] = true; // Si les chiffres ne sont pas différents, on enregistre une erreur
+            // }
         }
 
         ?>
@@ -58,25 +67,29 @@
             <h1 class='title'>MasterMind</h1>
             <h4>Regles du jeu :</h4>
             <div class='rules'>
-                <p>L'ordinateur choisi une combinaison a 4 chiffres entre 1 et 6. </p>
+                <p>L'ordinateur choisi une combinaison à 4 chiffres entre 1 et 6. </p>
                 <p>
                     Le joueur propose une combinaison. 
-                    L'ordinateur lui retourne un code sous forme de pion sans préciser quel chiffre corresepond a quel pion : un pion rouge par chiffre juste mais mal placé, et un pion blanc par chiffre bien placé. 
+                    L'ordinateur lui, retourne un code sous forme de pion sans préciser quel chiffre corresepond à quel pion : un pion rouge par chiffre juste mais mal placé, et un pion blanc par chiffre bien placé. 
                 </p>
                 <p>Lorsque le code est 4 pions blanc le joueur a gagné et peut relancer une partie. </p>
             </div>
+            <a href="view/settings.php"><button class='option'>Paramètres</button></a>
             <form method="post" action="index.php">
                 <table class='table'>
                     <tr>
-                        <th colspan="4" class='tab'>Proposition</th>
-                        <th class='tab'>Résultat</th>
+                        <?php 
+                        $size = $_SESSION['masterMind']->getSize();
+                        echo "<th colspan='$size' class='tab' id='proposition'>Proposition</th>";
+                        ?>
+                        <th class='tab' id='resultat'>Résultat</th>
                     </tr>
                     <?php
 
                     $history = new DOMDocument();
 
                     if (!isset($_SESSION['history'])){
-                        $form->generateHistory($_SESSION['masterMind']->getMaxTries()); // Génère l'historique
+                        $form->generateHistory($_SESSION['masterMind']->getMaxTries(), $_SESSION['masterMind']->getSize()); // Génère l'historique
                         echo $form->displayHistory(); // Affiche l'historique
                     } else {
                         echo $form->displayHistory();
@@ -84,7 +97,10 @@
                     
                     ?>
                     <tr>
-                        <th colspan="5" class='tab'>
+                        <?php 
+                        $size = $_SESSION['masterMind']->getSize()+1;
+                        echo "<th colspan='$size' class='tab'>";
+                        ?>
                             <?php
                             $masterMind = $_SESSION['masterMind'];
                             if ($masterMind->getWin()){ // Affiche un message si le joueur a gagné
@@ -108,7 +124,7 @@
                 ?>
                 <div class="select option">
                     <?php
-                    echo $form->select(); // Affiche le formulaire de sélection des chiffres
+                    echo $form->select($_SESSION['masterMind']->getSize()); // Affiche le formulaire de sélection des chiffres
                     ?>
                 </div>
                 <?php 

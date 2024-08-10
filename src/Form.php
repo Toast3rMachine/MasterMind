@@ -30,25 +30,26 @@ class Form{
     }
 
     /**
+     * @param int $numberOfLines
      * @param int $numberOfCells
      * 
      * @return void
      * 
      * Génère l'historique du jeu quand celui-ci n'est pas encore initialisé
      */
-    public function generateHistory(int $numberOfCells): void{
+    public function generateHistory(int $numberOfLines, int $numberOfCells): void{
         $history = new DOMDocument(); 
-        for ($i = 0; $i < $numberOfCells; $i++){ // Parcours de la liste <tr></tr>, $numberOfCells correspond au nombre de tentatives maximum
+        for ($i = 0; $i < $numberOfLines; $i++){ // Parcours de la liste <tr></tr>, $numberOfLines correspond au nombre de tentatives maximum
             $tr = $history->createElement("tr");
             
             $tr->setAttribute("id", $i+1); // Ajout d'un id pour chaque ligne
-            for ($j = 0; $j < 5; $j++){ // Parcours de la liste <td></td>, 5 car on a 4 colonnes pour les chiffres et 1 pour les pions
+            for ($j = 0; $j < $numberOfCells+1; $j++){ // Parcours de la liste <td></td>, $numberOfCells+1 car on a $numberOfCells chiffres à afficher + les 2 pions
                 $td = $history->createElement("td");
                 $tr->appendChild($td);
             }
             for ($j = 0; $j < 2; $j++){ // Parcours de la liste <span></span>, 2 car on a 2 types de pions à afficher
                 $span = $history->createElement("span");
-                $tr->getElementsByTagName("td")[4]->appendChild($span); // Ajout de la balise <span> dans la dernière colonne 
+                $tr->getElementsByTagName("td")[$numberOfCells]->appendChild($span); // Ajout de la balise <span> dans la dernière colonne 
                 if ($j == 0){ // $j == 0 car on veut que le premier <spans> soit pour les pions blancs
                     $span->setAttribute("class", "pion blanc");
                 } else {
@@ -74,7 +75,7 @@ class Form{
         $proposition = ""; //Variable contenant la proposition du joueur
         $history->loadHTML($_SESSION['history']);
 
-        for ($i = 0; $i < 4; $i++){ // Parcours de la liste <td></td>, $i < 4 car on a 4 chiffres à afficher
+        for ($i = 0; $i < $masterMind->getSize(); $i++){ // Parcours de la liste <td></td>, on a $masterMind->getSize() chiffres à deviner
             $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->setAttribute("class", "number"); // Ajout de la classe number pour le css
             $history->getElementById($masterMind->getTry())->getElementsByTagName("td")[$i]->appendChild($history->createTextNode($emplacementTab[$i])); // Ajout du chiffre dans le tableau
             $proposition = $proposition . $form->getValue("emplacement" . $i+1); // Ajout du chiffre dans la proposition
@@ -90,16 +91,18 @@ class Form{
     }
 
     /**
+     * @param int $numberOfCells
+     * 
      * @return string
      * 
      * Retourne le formulaire de sélection des chiffres
      */
-    public function select(): string{
+    public function select(int $numberOfCells): string{
         $selectMenu = new DOMDocument();
         $td = $selectMenu->createElement("td");
-        for($i = 0; $i < 4; $i++){ // Parcours de la liste <select></select>, $i < 4 car on a 4 chiffres à deviner
+        for($i = 0; $i < $numberOfCells; $i++){ // Parcours de la liste <select></select>, $i < $numberOfCells car on a $numberOfCells chiffres à deviner
             $select = $selectMenu->createElement("select");
-            for($j = 1; $j <= 6; $j++){ // Parcours de la liste <option></option>, $j <= 6 car on a 6 chiffres à afficher
+            for($j = 1; $j <= $numberOfCells+2; $j++){ // Parcours de la liste <option></option>, $j <= $numberOfCells+2 car il y a deux chiffres qui ne sont pas présent dans le code secret
                 $option = $selectMenu->createElement("option");
                 $option->setAttribute("value", $j); // Ajout de la valeur dans la balise <option>
                 $option->appendChild($selectMenu->createTextNode($j));

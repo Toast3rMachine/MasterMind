@@ -1,0 +1,25 @@
+.information {
+    color: rgb(156 163 175);
+    font-weight: normal;
+}
+
+div.setting {
+    margin-bottom: 1rem;
+}
+
+p.information, select {
+    display: inline;
+}
+
+.important {
+    color: red;
+    font-weight: 700;
+}
+
+input {
+    margin-top: 1rem;
+}
+
+button.option {
+    margin-top: 1rem;
+}
