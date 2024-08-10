@@ -1,9 +1,9 @@
 # MasterMind
 
 ## Sommaire
-- [Choix technique](https://github.com/Toast3rMachine/MasterMind/edit/main/README.md#choix-technique)
-- [Temps passé sur le sujet](https://github.com/Toast3rMachine/MasterMind/edit/main/README.md#choix-technique)
-- [Sources](https://github.com/Toast3rMachine/MasterMind/edit/main/README.md#choix-technique)
+- [Choix technique](https://github.com/Toast3rMachine/MasterMind?tab=readme-ov-file#choix-technique)
+- [Temps passé sur le sujet](https://github.com/Toast3rMachine/MasterMind?tab=readme-ov-file#temps-pass%C3%A9-sur-le-sujet)
+- [Sources](https://github.com/Toast3rMachine/MasterMind?tab=readme-ov-file#sources)
 
 ## Choix technique
 
