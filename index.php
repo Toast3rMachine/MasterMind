@@ -46,7 +46,7 @@
             for ($i = 0; $i < $masterMind->getSize(); $i++){ // Parcours de la liste <select></select>, on a $masterMind->getSize() chiffres à deviner
                 $emplacementTab[$i] = $_POST['emplacement' . $i+1]; // Récupération des valeurs des emplacements
             }
-            // if (count(array_unique($emplacementTab)) == count($emplacementTab)){ // Vérifie si les chiffres sont différents
+            if (count(array_unique($emplacementTab)) == count($emplacementTab)){ // Vérifie si les chiffres sont différents
 
                 $masterMind = $_SESSION['masterMind'];
                 $masterMind->incrementTry();
@@ -55,9 +55,9 @@
                 $form->updateHistory($history, $form, $emplacementTab); // Mise à jour de l'historique
                 header( "Location: {$_SERVER['REQUEST_URI']}", true, 303 ); // Redirection pour éviter le renvoi du formulaire
                 exit(); // Arrêt du script
-            // } else {
-            //     $_SESSION['erreur'] = true; // Si les chiffres ne sont pas différents, on enregistre une erreur
-            // }
+            } else {
+                $_SESSION['erreur'] = true; // Si les chiffres ne sont pas différents, on enregistre une erreur
+            }
         }
 
         ?>
